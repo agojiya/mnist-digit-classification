@@ -6,7 +6,7 @@ import numpy as np
 
 # Todo: Save to file
 
-N_EPOCHS = 10
+N_EPOCHS = 50
 BATCH_SIZE = 512
 
 in_x = tf.placeholder(dtype=tf.float32, shape=[None, mnist_read.IMAGE_WIDTH * mnist_read.IMAGE_HEIGHT])
@@ -23,11 +23,12 @@ num_examples = len(train_images)
 with tf.Session() as session:
     session.run(tf.global_variables_initializer())
 
-    for n in range(N_EPOCHS):
-        for i in range(int(num_examples / BATCH_SIZE)):
+    for e in range(N_EPOCHS):
+        for i in range(int(num_examples / BATCH_SIZE) + 1):
+            n = min(BATCH_SIZE, num_examples - BATCH_SIZE * i)
             images = np.reshape(np.asarray(train_images[i * BATCH_SIZE:(i + 1) * BATCH_SIZE]).flatten(),
-                                (BATCH_SIZE, mnist_read.IMAGE_WIDTH * mnist_read.IMAGE_HEIGHT))
+                                (n, mnist_read.IMAGE_WIDTH * mnist_read.IMAGE_HEIGHT))
             labels = np.asarray(train_labels[i * BATCH_SIZE:(i + 1) * BATCH_SIZE])
             _, batch_loss = session.run([optimizer, loss], feed_dict={in_x: images, in_y: labels})
             # Todo: Print average loss to get a feel for progress
-        print(n + 1, '/', N_EPOCHS, 'epochs completed')
+        print(e + 1, '/', N_EPOCHS, 'epochs completed')
