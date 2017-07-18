@@ -1,15 +1,17 @@
 import os
 
 from fileio import mnist_read
+from fileio import misc
 from flat import model
 
 import tensorflow as tf
 import numpy as np
 
-# Todo: Read from file
+continued = True
 SAVE_PATH = 'X:/mnist/model/flat/model-epoch'
 SAVE_DIR = '/'.join(SAVE_PATH.split('/')[0:-1])
 if not os.path.isdir(SAVE_DIR):
+    continued = False  # Directory is newly made so there's no way that this run continues based on the last execution
     os.makedirs(SAVE_DIR)
 
 N_EPOCHS = 20
@@ -30,6 +32,15 @@ saver = tf.train.Saver(max_to_keep=None)
 with tf.Session() as session:
     session.run(tf.global_variables_initializer())
 
+    N_TOTAL_EPOCHS = N_EPOCHS
+    saved_epochs = 0
+    if continued:
+        saved_epochs = misc.get_highest_epoch_saved(SAVE_DIR)
+        N_TOTAL_EPOCHS = N_EPOCHS + saved_epochs
+
+        saver.restore(sess=session, save_path=(SAVE_PATH + '-' + str(saved_epochs)))
+        print(saved_epochs, '+', N_EPOCHS, '=', N_TOTAL_EPOCHS, 'epochs')
+
     for e in range(N_EPOCHS):
         for i in range(int(num_examples / BATCH_SIZE) + 1):
             n = min(BATCH_SIZE, num_examples - BATCH_SIZE * i)
@@ -38,6 +49,7 @@ with tf.Session() as session:
             labels = np.asarray(train_labels[i * BATCH_SIZE:(i + 1) * BATCH_SIZE])
             _, batch_loss = session.run([optimizer, loss], feed_dict={in_x: images, in_y: labels})
             # Todo: Print average loss to get a feel for progress
-        if (e + 1) % 5 == 0:
-            saver.save(sess=session, save_path=SAVE_PATH, global_step=(e + 1))
-        print(e + 1, '/', N_EPOCHS, 'epochs completed')
+        epochs_completed = saved_epochs + e + 1
+        if epochs_completed % 5 == 0:
+            saver.save(sess=session, save_path=SAVE_PATH, global_step=epochs_completed)
+        print(epochs_completed, '/', N_TOTAL_EPOCHS, 'epochs completed')
