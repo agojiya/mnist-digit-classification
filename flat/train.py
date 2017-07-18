@@ -1,12 +1,18 @@
+import os
+
 from fileio import mnist_read
 from flat import model
 
 import tensorflow as tf
 import numpy as np
 
-# Todo: Save to file
+# Todo: Read from file
+SAVE_PATH = 'X:/mnist/model/flat/model-epoch'
+SAVE_DIR = '/'.join(SAVE_PATH.split('/')[0:-1])
+if not os.path.isdir(SAVE_DIR):
+    os.makedirs(SAVE_DIR)
 
-N_EPOCHS = 50
+N_EPOCHS = 20
 BATCH_SIZE = 512
 
 in_x = tf.placeholder(dtype=tf.float32, shape=[None, mnist_read.IMAGE_WIDTH * mnist_read.IMAGE_HEIGHT])
@@ -20,6 +26,7 @@ optimizer = tf.train.AdamOptimizer().minimize(loss)
 train_images, train_labels = mnist_read.parse_image_file('train'), mnist_read.parse_label_file('train')
 num_examples = len(train_images)
 
+saver = tf.train.Saver(max_to_keep=None)
 with tf.Session() as session:
     session.run(tf.global_variables_initializer())
 
@@ -31,4 +38,6 @@ with tf.Session() as session:
             labels = np.asarray(train_labels[i * BATCH_SIZE:(i + 1) * BATCH_SIZE])
             _, batch_loss = session.run([optimizer, loss], feed_dict={in_x: images, in_y: labels})
             # Todo: Print average loss to get a feel for progress
+        if (e + 1) % 5 == 0:
+            saver.save(sess=session, save_path=SAVE_PATH, global_step=(e + 1))
         print(e + 1, '/', N_EPOCHS, 'epochs completed')
