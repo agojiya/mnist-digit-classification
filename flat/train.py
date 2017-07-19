@@ -37,15 +37,16 @@ with tf.Session() as session:
         print('Loaded', saved_epochs, 'epochs of training')
 
     for e in range(N_EPOCHS):
+        epoch_loss = 0
         for i in range(int(num_examples / BATCH_SIZE) + 1):
             n = min(BATCH_SIZE, num_examples - BATCH_SIZE * i)
             images = np.reshape(np.asarray(train_images[i * BATCH_SIZE:(i + 1) * BATCH_SIZE]).flatten(),
                                 (n, mnist_read.IMAGE_WIDTH * mnist_read.IMAGE_HEIGHT))
             labels = np.asarray(train_labels[i * BATCH_SIZE:(i + 1) * BATCH_SIZE])
             _, batch_loss = session.run([optimizer, loss], feed_dict={in_x: images, in_y: labels})
-            # Todo: Print average loss to get a feel for progress
+            epoch_loss += batch_loss
 
         epochs_completed = saved_epochs + e + 1
         if epochs_completed % 5 == 0:
             saver.save(sess=session, save_path=SAVE_PATH, global_step=epochs_completed)
-        print(epochs_completed, '/', N_TOTAL_EPOCHS, 'epochs completed')
+        print(epochs_completed, '/', N_TOTAL_EPOCHS, 'epochs completed', '(', '{:.5e}'.format(epoch_loss / num_examples), ')')
