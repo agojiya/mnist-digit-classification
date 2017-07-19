@@ -1,7 +1,6 @@
 import os
 
-from fileio import mnist_read
-from fileio import misc
+from fileio import mnist_read, misc
 from flat import model
 
 import tensorflow as tf
