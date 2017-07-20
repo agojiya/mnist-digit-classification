@@ -1,4 +1,5 @@
-import os
+from os import path, makedirs
+from random import shuffle
 
 from fileio import mnist_read, misc
 from flat import model
@@ -8,8 +9,8 @@ import numpy as np
 
 SAVE_PATH = 'X:/mnist/model/flat/model-epoch'
 SAVE_DIR = '/'.join(SAVE_PATH.split('/')[0:-1])
-if not os.path.isdir(SAVE_DIR):
-    os.makedirs(SAVE_DIR)
+if not path.isdir(SAVE_DIR):
+    makedirs(SAVE_DIR)
 
 N_EPOCHS = 20
 BATCH_SIZE = 512
@@ -24,6 +25,9 @@ optimizer = tf.train.AdamOptimizer().minimize(loss)
 
 train_images, train_labels = mnist_read.parse_image_file('train'), mnist_read.parse_label_file('train')
 num_examples = len(train_images)
+zipped = list(zip(train_images, train_labels))
+shuffle(zipped)
+train_images, train_labels = zip(*zipped)
 
 saver = tf.train.Saver(max_to_keep=None)
 with tf.Session() as session:
