@@ -29,6 +29,7 @@ with tf.Session() as session:
     print('Loaded', saved_epochs, 'epochs of training')
 
     correct = 0
+    correct_images, incorrect_images = [], []
     for i in range(int(num_examples / BATCH_SIZE) + 1):
         n = min(BATCH_SIZE, num_examples - BATCH_SIZE * i)
         images = np.reshape(np.asarray(test_images[i * BATCH_SIZE:(i + 1) * BATCH_SIZE]).flatten(),
@@ -39,5 +40,8 @@ with tf.Session() as session:
         for x in range(len(actual_labels)):
             if np.argmax(actual_labels[x]) == np.argmax(predicted_labels[x]):
                 correct += 1
+                correct_images.append(test_images[x])
+            else:
+                incorrect_images.append(test_images[x])
 
     print('Accuracy:', '{}%'.format(round(correct / num_examples * 100, ndigits=2)))
