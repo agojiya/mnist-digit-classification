@@ -1,4 +1,5 @@
 import tensorflow as tf
+from fileio import mnist_read
 
 
 def create_conv2d_model(data_in):
@@ -9,7 +10,12 @@ def create_conv2d_model(data_in):
 
     Returns:
         Tensor: A Tensor of shape [-1, 10] representing the output of the neural network (10 possible classes)
+
+    Todo:
+        Tweak as necessary
     """
+    data_in = tf.reshape(data_in, [-1, mnist_read.IMAGE_WIDTH, mnist_read.IMAGE_HEIGHT, 1])
+
     c1 = tf.layers.conv2d(inputs=data_in, filters=32, kernel_size=4, padding="same", activation=tf.nn.relu)
     p1 = tf.layers.max_pooling2d(inputs=c1, pool_size=2, strides=2, padding="same")
 
@@ -22,4 +28,12 @@ def create_conv2d_model(data_in):
     c4 = tf.layers.conv2d(inputs=p3, filters=32, kernel_size=4, padding="same", activation=tf.nn.relu)
     p4 = tf.layers.max_pooling2d(inputs=c4, pool_size=2, strides=2, padding="same")
 
-    # Todo: Fully connected (dense) layers and output layer
+    # >>> p4.shape
+    # (-1, 2, 2, 32)
+    # 28 / 2 = 14 / 2 = 7 / 2 = 4 / 2 = 2 (Result of 4 max_pooling2d layers with pool_size=2 and strides=2)
+    # (Rounded up since we used padding="same")
+    reshaped_p4 = tf.reshape(p4, [-1, 2 * 2 * 32])
+    d1 = tf.layers.dense(inputs=reshaped_p4, units=512, activation=tf.nn.relu, use_bias=True)
+    d2 = tf.layers.dense(inputs=d1, units=512, activation=tf.nn.relu, use_bias=True)
+    out = tf.layers.dense(inputs=d2, units=mnist_read.N_CLASSES)
+    return out
