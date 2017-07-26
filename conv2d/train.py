@@ -1,12 +1,13 @@
 from os import path, makedirs
 from random import shuffle
 
-from fileio import mnist_read
+from fileio import mnist_read, misc
 from conv2d import model
 
 import tensorflow as tf
+import numpy as np
 
-SAVE_PATH = 'X:/mnist/model/flat/model-epoch'
+SAVE_PATH = 'X:/mnist/model/conv2d/model-epoch'
 SAVE_DIR = '/'.join(SAVE_PATH.split('/')[0:-1])
 if not path.isdir(SAVE_DIR):
     makedirs(SAVE_DIR)
@@ -28,4 +29,27 @@ zipped = list(zip(train_images, train_labels))
 shuffle(zipped)
 train_images, train_labels = zip(*zipped)
 
-# Todo: Saver and training
+saver = tf.train.Saver(max_to_keep=None)
+with tf.Session() as session:
+    session.run(tf.global_variables_initializer())
+
+    saved_epochs = misc.get_highest_epoch_saved(SAVE_DIR)
+    N_TOTAL_EPOCHS = N_EPOCHS + saved_epochs
+    if saved_epochs != 0:
+        saver.restore(sess=session, save_path=(SAVE_PATH + '-' + str(saved_epochs)))
+        print('Loaded', saved_epochs, 'epochs of training')
+
+    for e in range(N_EPOCHS):
+        epoch_loss = 0
+        for i in range(int(num_examples / BATCH_SIZE) + 1):
+            n = min(BATCH_SIZE, num_examples - BATCH_SIZE * i)
+            images = np.asarray(train_images[i * BATCH_SIZE:(i + 1) * BATCH_SIZE])
+            labels = np.asarray(train_labels[i * BATCH_SIZE:(i + 1) * BATCH_SIZE])
+            _, batch_loss = session.run([optimizer, loss], feed_dict={in_x: images, in_y: labels})
+            epoch_loss += batch_loss
+
+        epochs_completed = saved_epochs + e + 1
+        if epochs_completed % 5 == 0:
+            saver.save(sess=session, save_path=SAVE_PATH, global_step=epochs_completed)
+        print(epochs_completed, '/', N_TOTAL_EPOCHS, 'epochs completed', '(',
+              '{:.5e}'.format(epoch_loss / num_examples), ')')
