@@ -12,7 +12,7 @@ SAVE_DIR = '/'.join(SAVE_PATH.split('/')[0:-1])
 if not path.isdir(SAVE_DIR):
     makedirs(SAVE_DIR)
 
-N_EPOCHS = 10
+N_EPOCHS = 20
 BATCH_SIZE = 512
 
 in_x = tf.placeholder(dtype=tf.float32, shape=[None, mnist_read.IMAGE_WIDTH, mnist_read.IMAGE_HEIGHT])

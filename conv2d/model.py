@@ -35,5 +35,6 @@ def create_conv2d_model(data_in):
     reshaped_p4 = tf.reshape(p4, [-1, 2 * 2 * 32])
     d1 = tf.layers.dense(inputs=reshaped_p4, units=512, activation=tf.nn.relu, use_bias=True)
     d2 = tf.layers.dense(inputs=d1, units=512, activation=tf.nn.relu, use_bias=True)
-    out = tf.layers.dense(inputs=d2, units=mnist_read.N_CLASSES)
+    d2_normalized = tf.divide(d2, tf.reduce_max(tf.abs(d2)))
+    out = tf.layers.dense(inputs=d2_normalized, units=mnist_read.N_CLASSES, activation=tf.nn.sigmoid)
     return out
