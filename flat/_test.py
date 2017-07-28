@@ -28,7 +28,6 @@ with tf.Session() as session:
     saver.restore(sess=session, save_path=(SAVE_PATH + '-' + str(saved_epochs)))
     print('Loaded', saved_epochs, 'epochs of training')
 
-    correct = 0
     correct_images, incorrect_images = [], []
     for i in range(int(num_examples / BATCH_SIZE) + 1):
         n = min(BATCH_SIZE, num_examples - BATCH_SIZE * i)
@@ -39,9 +38,8 @@ with tf.Session() as session:
 
         for x in range(len(actual_labels)):
             if np.argmax(actual_labels[x]) == np.argmax(predicted_labels[x]):
-                correct += 1
                 correct_images.append(test_images[x])
             else:
                 incorrect_images.append(test_images[x])
 
-    print('Accuracy:', '{}%'.format(round(correct / num_examples * 100, ndigits=2)))
+    print('Accuracy:', '{}%'.format(round(len(correct_images) / num_examples * 100, ndigits=2)))
