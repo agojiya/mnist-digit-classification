@@ -1,6 +1,8 @@
 import tensorflow as tf
 from fileio import mnist_read
 
+CONSTANT_255 = tf.constant(255, dtype=tf.float32)
+
 
 def create_conv2d_model(data_in):
     """Creates the model consisting of convolutional layers, fully connected layers, and the output layer (returned).
@@ -16,17 +18,19 @@ def create_conv2d_model(data_in):
     """
     data_in = tf.reshape(data_in, [-1, mnist_read.IMAGE_WIDTH, mnist_read.IMAGE_HEIGHT, 1])
 
-    c1 = tf.layers.conv2d(inputs=data_in, filters=32, kernel_size=4, padding="same", activation=tf.nn.relu)
-    p1 = tf.layers.max_pooling2d(inputs=c1, pool_size=2, strides=2, padding="same")
+    data_in_padded = tf.add(
+        tf.pad(tf.subtract(data_in, CONSTANT_255), [[0, 0], [2, 2], [2, 2], [0, 0]]), CONSTANT_255)
+    c1 = tf.layers.conv2d(inputs=data_in_padded, filters=32, kernel_size=4, padding="valid", activation=tf.nn.relu)
+    p1 = tf.layers.max_pooling2d(inputs=c1, pool_size=2, strides=2, padding="valid", name='Pool-1')
 
     c2 = tf.layers.conv2d(inputs=p1, filters=32, kernel_size=4, padding="same", activation=tf.nn.relu)
-    p2 = tf.layers.max_pooling2d(inputs=c2, pool_size=2, strides=2, padding="same")
+    p2 = tf.layers.max_pooling2d(inputs=c2, pool_size=2, strides=2, padding="same", name='Pool-2')
 
     c3 = tf.layers.conv2d(inputs=p2, filters=32, kernel_size=4, padding="same", activation=tf.nn.relu)
-    p3 = tf.layers.max_pooling2d(inputs=c3, pool_size=2, strides=2, padding="same")
+    p3 = tf.layers.max_pooling2d(inputs=c3, pool_size=2, strides=2, padding="same", name='Pool-3')
 
     c4 = tf.layers.conv2d(inputs=p3, filters=32, kernel_size=4, padding="same", activation=tf.nn.relu)
-    p4 = tf.layers.max_pooling2d(inputs=c4, pool_size=2, strides=2, padding="same")
+    p4 = tf.layers.max_pooling2d(inputs=c4, pool_size=2, strides=2, padding="same", name='Pool-4')
 
     # >>> p4.shape
     # (-1, 2, 2, 32)
